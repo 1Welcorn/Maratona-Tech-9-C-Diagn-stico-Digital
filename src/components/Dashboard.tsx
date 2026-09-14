@@ -5,7 +5,7 @@ import { useAuth } from '../lib/auth';
 import { DiagnosticTab } from './DiagnosticTab';
 import { CoexistenceTab } from './CoexistenceTab';
 
-export const Dashboard: React.FC = () => {
+export const Dashboard: React.FC<{ bypass?: boolean }> = ({ bypass }) => {
   const { user, setRoleImmediately } = useAuth();
   const [activeTab, setActiveTab] = useState<'diagnostic' | 'coexistence'>('diagnostic');
   
@@ -14,7 +14,15 @@ export const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const studentName = bypass ? localStorage.getItem('student_name') || 'Aluno' : user?.email;
+
   const handleSignOut = () => {
+    if (bypass) {
+      localStorage.removeItem('student_name');
+      setRoleImmediately(null);
+      window.location.reload();
+      return;
+    }
     supabase.auth.signOut();
   };
 
@@ -59,7 +67,7 @@ export const Dashboard: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-slate-400 hidden md:block">{user?.email}</span>
+            <span className="text-sm font-medium text-slate-400 hidden md:block">{studentName}</span>
             <button 
               onClick={() => setShowTeacherModal(true)}
               className="px-4 py-2 text-sm font-medium text-amber-950 bg-amber-500 hover:bg-amber-400 rounded-lg transition-colors shadow-lg shadow-amber-500/20 animate-pulse"

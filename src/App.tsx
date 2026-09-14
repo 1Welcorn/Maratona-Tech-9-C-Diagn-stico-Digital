@@ -48,11 +48,12 @@ const MainApp: React.FC = () => {
     return <TeacherDashboard />;
   }
 
-  if (!session) {
-    return <AuthScreen />;
+  // Se for aluno (via bypass local) ou tiver sessão, vai pro Dashboard
+  if (role === 'student' || session) {
+    return <Dashboard bypass={role === 'student' && !session} />;
   }
 
-  return <Dashboard />;
+  return <AuthScreen />;
 };
 
 export default function App() {

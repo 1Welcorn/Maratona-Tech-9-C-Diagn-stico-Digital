@@ -25,7 +25,9 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [role, setRole] = useState<Role>(null);
+  const [role, setRole] = useState<Role>(() => {
+    return localStorage.getItem('student_name') ? 'student' : null;
+  });
   const [loading, setLoading] = useState(true);
 
   const wasPromotedRef = useRef(false);
@@ -62,6 +64,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!supabase) {
       setLoading(false);
       return;
+    }
+
+    // Se já foi setado manualmente como estudante antes do supabase responder, libera
+    if (role === 'student' && !wasPromotedRef.current) {
+        setLoading(false);
     }
 
     supabase.auth.getSession().then(({ data: { session } }) => {

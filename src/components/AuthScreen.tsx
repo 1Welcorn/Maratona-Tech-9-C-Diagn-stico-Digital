@@ -32,10 +32,10 @@ export const AuthScreen: React.FC = () => {
       // Simulamos um login forçado armazenando os dados na sessão e liberando o acesso
       localStorage.setItem('student_name', name);
       setRoleImmediately('student');
+      setLoading(false);
       
     } catch (err: any) {
       setError(err.message || 'Erro no acesso');
-    } finally {
       setLoading(false);
     }
   };
