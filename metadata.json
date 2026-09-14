@@ -1,0 +1,8 @@
+{
+  "name": "Maratona Tech 9°C — Diagnóstico Digital",
+  "description": "App para alunos do 9º ano preencherem formulários de diagnóstico digital e convivência escolar, e professores visualizarem respostas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
