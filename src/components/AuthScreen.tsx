@@ -18,29 +18,23 @@ export const AuthScreen: React.FC = () => {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!supabase) {
-      setError('Por favor, configure as chaves do Supabase nas Configurações.');
-      return;
-    }
     setLoading(true);
     setError('');
 
     try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.auth.signUp({ 
-          email, 
-          password,
-          options: {
-            data: { name } // Name passed in user metadata
-          }
-        });
-        if (error) throw error;
+      // Como o Supabase travou a criação de contas por e-mail no plano grátis (Rate Limit / Anti-spam),
+      // vamos dar um "bypass" e permitir o acesso direto do aluno preenchendo apenas o nome.
+      // O progresso deles ficará salvo localmente na máquina deles durante a aula.
+      if (!name) {
+        throw new Error('Por favor, informe seu nome para entrar.');
       }
+      
+      // Simulamos um login forçado armazenando os dados na sessão e liberando o acesso
+      localStorage.setItem('student_name', name);
+      setRoleImmediately('student');
+      
     } catch (err: any) {
-      setError(err.message || 'Erro na autenticação');
+      setError(err.message || 'Erro no acesso');
     } finally {
       setLoading(false);
     }
@@ -90,58 +84,26 @@ export const AuthScreen: React.FC = () => {
         )}
 
         <form onSubmit={handleAuth} className="space-y-4">
-          {!isLogin && (
-            <div>
-              <label className="block text-sm font-medium text-slate-400 mb-1">Nome completo</label>
-              <input
-                type="text"
-                required
-                value={name}
-                onChange={e => setName(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
-                placeholder="Seu nome"
-              />
-            </div>
-          )}
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">E-mail</label>
+            <label className="block text-sm font-medium text-slate-400 mb-1">Como você se chama?</label>
             <input
-              type="email"
+              type="text"
               required
-              value={email}
-              onChange={e => setEmail(e.target.value)}
+              value={name}
+              onChange={e => setName(e.target.value)}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
-              placeholder="aluno@escola.com"
+              placeholder="Digite seu nome completo"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">Senha</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all"
-              placeholder="••••••••"
-            />
-          </div>
+          
           <button
             type="submit"
             disabled={loading}
             className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold py-3 rounded-xl hover:from-cyan-400 hover:to-blue-500 focus:ring-2 focus:ring-cyan-500/50 transition-all disabled:opacity-50 mt-2"
           >
-            {loading ? 'Aguarde...' : (isLogin ? 'Entrar' : 'Criar Conta')}
+            {loading ? 'Entrando...' : 'Entrar como Aluno'}
           </button>
         </form>
-
-        <div className="mt-6 text-center">
-          <button
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-sm text-slate-400 hover:text-cyan-400 transition-colors"
-          >
-            {isLogin ? 'Não tem conta? Crie uma.' : 'Já tem conta? Faça login.'}
-          </button>
-        </div>
 
         <div className="mt-8 pt-6 border-t border-slate-800/50 text-center">
           <button
