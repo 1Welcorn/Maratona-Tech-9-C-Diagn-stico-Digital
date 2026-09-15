@@ -23,7 +23,18 @@ export const CoexistenceTab: React.FC = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      if (!user) return;
+      if (!user) {
+        // Fallback for students using the bypass (no auth)
+        const localData = localStorage.getItem('coexistence_guide');
+        if (localData) {
+          try {
+            setFormData(JSON.parse(localData));
+            setHasExisting(true);
+          } catch(e) {}
+        }
+        setLoading(false);
+        return;
+      }
       try {
         const { data, error } = await supabase
           .from('coexistence_guides')
@@ -51,9 +62,17 @@ export const CoexistenceTab: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!user) return;
     setSaving(true);
     try {
+      if (!user) {
+        // Save locally for anonymous students
+        localStorage.setItem('coexistence_guide', JSON.stringify(formData));
+        alert('Salvo com sucesso no seu dispositivo!');
+        setHasExisting(true);
+        setSaving(false);
+        return;
+      }
+
       if (hasExisting) {
         await supabase
           .from('coexistence_guides')
@@ -75,7 +94,7 @@ export const CoexistenceTab: React.FC = () => {
   };
 
   const handleDownload = () => {
-    downloadCoexistencePdf(formData, user?.email || 'Aluno');
+    downloadCoexistencePdf(formData, user?.email || localStorage.getItem('student_name') || 'Aluno');
   };
 
   if (loading) {
